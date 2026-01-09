@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
 
@@ -10,6 +10,10 @@ export default function Signup() {
   const [error, setError] = useState<string | null>(null);
   const auth = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (auth.user) navigate("/dashboard");
+  }, [auth.user, navigate]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
