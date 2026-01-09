@@ -31,6 +31,7 @@
     "jsdom": "^22.1.0",
     "typescript": "^5.1.6",
     "vite": "^5.0.0",
-    "vitest": "^0.34.2"
+    "vitest": "^0.34.2",
+    "playwright": "^1.57.0"
   }
 }

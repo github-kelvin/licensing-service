@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/licensing
+      STRIPE_WEBHOOK_SECRET: whsec_test
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: licensing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache backend npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-backend-
+
+      - name: Install backend deps
+        working-directory: backend
+        run: |
+          npm ci
+
+      - name: Lint backend
+        working-directory: backend
+        continue-on-error: true
+        run: |
+          npm run lint
+
+      - name: Typecheck backend
+        working-directory: backend
+        run: |
+          npm run typecheck
+
+      - name: Run DB migrations
+        working-directory: backend
+        run: |
+          npx prisma migrate deploy
+
+      - name: Run backend unit tests
+        working-directory: backend
+        run: |
+          npm test --silent
+
+      - name: Run backend integration tests
+        working-directory: backend
+        run: |
+          npx vitest run src/__tests__/integration --reporter dot
+
+      - name: Cache frontend npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-frontend-
+
+      - name: Install and test frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test --silent
+          npm run build --silent
+

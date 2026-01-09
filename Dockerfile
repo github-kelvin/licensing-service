@@ -1,13 +1,19 @@
-FROM node:20-alpine AS build
+# Simple backend image for Node.js app
+FROM node:20-bullseye-slim AS builder
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY backend/package.json backend/package-lock.json* ./
+# copy prisma schema so prepare/install scripts that run prisma generate succeed
+COPY backend/prisma ./prisma
+# install all deps (including dev) to run tsc/prisma generate
 RUN npm ci
-COPY . .
+COPY backend .
 RUN npm run build
 
-FROM node:20-alpine AS runtime
+FROM node:20-bullseye-slim AS runner
 WORKDIR /app
-RUN npm install -g serve
-COPY --from=build /app/dist ./dist
-EXPOSE 4173
-CMD ["serve", "-s", "dist", "-l", "4173"]
+COPY backend/package.json backend/package-lock.json* ./
+# install only production deps for smaller runtime image
+RUN npm ci --omit=dev --ignore-scripts
+COPY --from=builder /app/dist ./dist
+EXPOSE 4000
+CMD ["node", "dist/index.js"]

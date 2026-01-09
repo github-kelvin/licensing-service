@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: licensing
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    command: sh -c "cd /app && npm ci && npm run dev"
+    working_dir: /app/backend
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/licensing
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+    command: sh -c "cd /app && npm ci && npm run dev -- --host 0.0.0.0"
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_FORCE=true
+    depends_on:
+      - backend
+
+volumes:
+  db-data:

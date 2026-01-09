@@ -1,0 +1,77 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id          String       @id @default(uuid())
+  name        String
+  memberships Membership[]
+  licenses    License[]
+  apiKeys     ApiKey[]
+  payments    Payment[]
+  createdAt   DateTime     @default(now())
+}
+
+model User {
+  id              String       @id @default(uuid())
+  email           String       @unique
+  password        String
+  name            String?
+  memberships     Membership[]
+  licensesCreated License[]
+  apiKeysCreated  ApiKey[]
+  createdAt       DateTime     @default(now())
+}
+
+model Membership {
+  id     String       @id @default(uuid())
+  user   User         @relation(fields: [userId], references: [id])
+  userId String
+  org    Organization @relation(fields: [orgId], references: [id])
+  orgId  String
+  role   String       @default("member")
+
+  @@unique([userId, orgId])
+}
+
+model License {
+  id          String        @id @default(uuid())
+  key         String        @unique
+  name        String
+  metadata    Json?
+  revoked     Boolean       @default(false)
+  org         Organization? @relation(fields: [orgId], references: [id])
+  orgId       String?
+  createdBy   User?         @relation(fields: [createdById], references: [id])
+  createdById String?
+  createdAt   DateTime      @default(now())
+}
+
+model ApiKey {
+  id          String       @id @default(uuid())
+  key         String       @unique
+  name        String
+  revoked     Boolean      @default(false)
+  org         Organization @relation(fields: [orgId], references: [id])
+  orgId       String
+  createdBy   User?        @relation(fields: [createdById], references: [id])
+  createdById String?
+  createdAt   DateTime     @default(now())
+}
+
+model Payment {
+  id         String        @id @default(uuid())
+  provider   String
+  providerId String        @unique
+  amount     Int
+  currency   String
+  status     String
+  org        Organization? @relation(fields: [orgId], references: [id])
+  orgId      String?
+  createdAt  DateTime      @default(now())
+}
