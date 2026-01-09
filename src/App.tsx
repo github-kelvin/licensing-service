@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import { AuthProvider } from "./context/AuthProvider";
+import { AuthProvider, useAuth } from "./context/AuthProvider";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Dashboard from "./components/Dashboard";
@@ -10,13 +10,28 @@ import CreateLicense from "./components/Licenses/Create";
 import LicenseDetails from "./components/LicenseDetails";
 import ApiKeyList from "./components/ApiKeys/List";
 
+export function Nav() {
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+  return (
+    <div style={{ padding: 12, borderBottom: "1px solid #eee" }}>
+      <Link to="/">Home</Link>
+      {' | '}
+      {!isLoggedIn && (
+        <>
+          <Link to="/login">Login</Link> | <Link to="/signup">Sign up</Link> | 
+        </>
+      )}
+      <Link to="/licenses">Licenses</Link> | <Link to="/apikeys">API Keys</Link>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div style={{ padding: 12, borderBottom: "1px solid #eee" }}>
-          <Link to="/">Home</Link> | <Link to="/login">Login</Link> | <Link to="/signup">Sign up</Link> | <Link to="/licenses">Licenses</Link> | <Link to="/apikeys">API Keys</Link>
-        </div>
+        <Nav />
         <Routes>
           <Route path="/" element={<div style={{ padding: 24 }}><h1>Licensing Service Dashboard (MVP)</h1><p>Use the links to sign up or login.</p></div>} />
           <Route path="/login" element={<Login />} />
