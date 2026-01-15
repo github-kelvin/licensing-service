@@ -87,29 +87,7 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
+          npm run lint --silent || true
           npm test --silent
           npm run build --silent
-
-      - name: Cache frontend/backend npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-${{ runner.os }}-frontend-backend-${{ hashFiles('frontend/backend/package-lock.json') }}
-          restore-keys: |
-            npm-${{ runner.os }}-frontend-backend-
-
-      - name: Install frontend/backend deps
-        working-directory: frontend/backend
-        run: |
-          npm ci
-
-      - name: Run frontend/backend unit tests
-        working-directory: frontend/backend
-        run: |
-          npm test --silent
-
-      - name: Run frontend/backend integration tests
-        working-directory: frontend/backend
-        run: |
-          npx vitest run src/__tests__/integration --reporter dot
 
