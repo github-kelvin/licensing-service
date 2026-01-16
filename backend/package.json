@@ -39,7 +39,7 @@
     "test:watch": "vitest --watch",
     "test:integration": "vitest run src/__tests__/integration --reporter dot",
     "test:all": "vitest run",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint src/",
     "typecheck": "tsc --noEmit"
   }
 }
