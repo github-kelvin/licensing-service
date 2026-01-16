@@ -5,6 +5,7 @@ export default defineConfig({
     environment: "node",
     globals: true,
     // Exclude tests that depend on supertest (CommonJS module resolution issue with Vitest)
-    exclude: ["src/__tests__/apikeys.test.ts", "src/__tests__/integration/**", "**/node_modules/**", "**/dist/**"]
+    // when running the default test suite. The test:integration script will run them explicitly.
+    exclude: ["src/__tests__/apikeys.test.ts", "**/node_modules/**", "**/dist/**"]
   }
 });
