@@ -35,9 +35,10 @@
     "prisma:generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "prepare": "prisma generate",
-    "test": "vitest",
+    "test": "vitest --run",
     "test:watch": "vitest --watch",
-    "test:integration": "vitest run src/__tests__/integration",
+    "test:integration": "vitest run src/__tests__/integration --reporter dot",
+    "test:all": "vitest run",
     "lint": "eslint . --ext .ts",
     "typecheck": "tsc --noEmit"
   }
